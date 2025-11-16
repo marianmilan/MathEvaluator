@@ -1,18 +1,14 @@
-package node;
+import javax.lang.model.util.Elements;
 
-public enum NodeType { BINARY, NUMBER, VARIABLE, GROUPED_VARIABLE, UNARY, FUNCTION, GROUPED, EQUAL}
+import static java.lang.Math.pow;
+
 public abstract class Node {
-    public abstract void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction);
-    public abstract NodeType getType();
-    public String getName() {return null;}
-    public Token getToken() {return null;}
-    public Double getValue() {return null;}
-
+    public abstract Node simplify();
 
     static class BinaryNode extends Node {
-        final Node left;
-        final Token token;
-        final Node right;
+         Node left;
+         Token token;
+         Node right;
 
         public BinaryNode(Node left, Token token, Node right) {
             this.left = left;
@@ -21,44 +17,60 @@ public abstract class Node {
         }
 
         @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {
-            if (token.type() == TokenType.MUL) {
+        public Node simplify() {
+            Node leftNode = left.simplify();
+            Node rightNode = right.simplify();
 
+            if (leftNode instanceof NumberNode ln && rightNode instanceof NumberNode rn) {
+                return switch(token.type()) {
+                    case ADD -> new NumberNode(ln.value + rn.value);
+                    case SUB -> new NumberNode(ln.value - rn.value);
+                    case MUL -> new NumberNode(ln.value * rn.value);
+                    case DIV -> new NumberNode(ln.value / rn.value);
+                    case POW -> new NumberNode(pow(ln.value, rn.value));
+                    default -> new BinaryNode(leftNode, token, rightNode);
+                };
             }
-        }
 
-        @Override
-        public NodeType getType() {
-            return NodeType.BINARY;
-        }
+            if (token.type() == TokenType.POW && leftNode instanceof VariableNode vn) {
+                if (rightNode instanceof NumberNode nn) {
+                   return new VariableNode(vn.coefficient, vn.name, nn.value);
+                }
+            }
 
-        public Token getToken() { return token; }
+            if (leftNode instanceof NumberNode nn && rightNode instanceof VariableNode vn) {
+                return new VariableNode(nn.value, vn.name, vn.exponent);
+            }
+            return new BinaryNode(leftNode, token, rightNode);
+        }
     }
 
     static class UnaryNode extends Node {
-        final Node child;
-        final Token token;
+        Node child;
+        Token token;
 
         public UnaryNode(Node child, Token token) {
             this.child = child;
             this.token = token;
         }
-        @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {
 
+        @Override
+        public Node simplify() {
+            Node node = child.simplify();
+            if (token.type() == TokenType.MINUS) {
+                if (node instanceof NumberNode nn) {
+                    return new NumberNode(-nn.value);
+                }
+                if (node instanceof VariableNode vn) {
+                    return new VariableNode(-vn.coefficient, vn.name, vn.exponent);
+                }
+            }
+            return new UnaryNode(node, token);
         }
-
-        @Override
-        public NodeType getType() {
-            return NodeType.UNARY;
-        }
-
-        @Override
-        public Token getToken() { return token; }
     }
 
     static class NumberNode extends Node {
-        final double value;
+        double value;
 
         public NumberNode(String value) {
             this.value = Double.parseDouble(value);
@@ -69,18 +81,8 @@ public abstract class Node {
         }
 
         @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {
-
-        }
-
-        @Override
-        public NodeType getType() {
-            return NodeType.NUMBER;
-        }
-
-        @Override
-        public Double getValue() {
-            return value;
+        public Node simplify() {
+            return this;
         }
     }
 
@@ -92,11 +94,8 @@ public abstract class Node {
         }
 
         @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {}
-
-        @Override
-        public NodeType getType() {
-            return NodeType.GROUPED;
+        public Node simplify() {
+            return child.simplify();
         }
     }
 
@@ -110,62 +109,25 @@ public abstract class Node {
         }
 
         @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {}
-
-        @Override
-        public NodeType getType() {
-            return NodeType.FUNCTION;
+        public Node simplify() {
+            return new FunctionNode(token, child.simplify());
         }
-
-        @Override
-        public Token getToken() { return token; }
     }
 
     static class VariableNode extends Node {
-        String name;
-
-        public VariableNode(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {
-
-        }
-
-        @Override
-        public NodeType getType() {
-            return NodeType.VARIABLE;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    static class GroupedVariable extends Node {
         double coefficient;
         String name;
         double exponent;
 
-        public GroupedVariable(double coefficient, String name, double exponent) {
+        public VariableNode(double coefficient, String name, double exponent) {
             this.coefficient = coefficient;
             this.name = name;
             this.exponent = exponent;
         }
 
-        public String getName() {
-            return name;
-        }
-
         @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {
-
-        }
-
-        @Override
-        public NodeType getType() {
-            return NodeType.GROUPED_VARIABLE;
+        public Node simplify() {
+            return this;
         }
     }
 
@@ -181,16 +143,8 @@ public abstract class Node {
         }
 
         @Override
-        public void addToMatrix(double[][] matrix, int row, int col, boolean isSubtraction) {
-
+        public Node simplify() {
+            return new EqualNode(left.simplify(), operator, right.simplify());
         }
-
-        @Override
-        public NodeType getType() {
-            return NodeType.EQUAL;
-        }
-
-        @Override
-        public Token getToken() { return operator; }
     }
 }
