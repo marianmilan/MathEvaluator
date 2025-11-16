@@ -23,7 +23,7 @@ public class Parser {
     }
 
     public Node expression() {
-        return equals();
+        return equals().simplify();
     }
 
     private Node equals() {
@@ -96,25 +96,20 @@ public class Parser {
 
     private Node primary() {
         if (match(TokenType.NUM)) return new Node.NumberNode(previous().value());
-
-        if (match(TokenType.PAR_L)) {
+        else if (match(TokenType.PAR_L)) {
             Node node = expression();
             consume(TokenType.PAR_R);
             return new Node.GroupingNode(node);
         }
-
-        if(check(TokenType.VAR) && constants.containsKey(peek().value())) {
+        else if(check(TokenType.VAR) && constants.containsKey(peek().value())) {
             advance();
             return new Node.NumberNode(constants.get(previous().value()));
         }
-
-        if (check(TokenType.VAR) && !isFunc(peek().value())) {
+        else if (check(TokenType.VAR) && !isFunc(peek().value())) {
             advance();
             variables.add(previous().value());
-            return new Node.VariableNode(previous().value());
-        }
-
-        return null;
+            return new Node.VariableNode(1, previous().value(), 1);
+        } else return null;
     }
 
     private boolean end() {
