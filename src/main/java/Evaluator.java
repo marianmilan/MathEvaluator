@@ -1,4 +1,5 @@
 import java.util.List;
+import static java.lang.Math.pow;
 
 public class Evaluator {
     private final Node head;
@@ -19,7 +20,8 @@ public class Evaluator {
         double a, b;
         if (node instanceof Node.NumberNode nn) return nn.value;
         if (node instanceof Node.VariableNode vn) {
-            return getVariableValue(vn.value);
+            double variableValue = getVariableValue(vn.name);
+            return vn.coefficient * pow(variableValue, vn.exponent);
         }
         if (node instanceof Node.GroupingNode gn) return evaluate(gn.child);
         if (node instanceof Node.BinaryNode bn) {
@@ -37,11 +39,11 @@ public class Evaluator {
         if (node instanceof Node.FunctionNode fn) {
             if (fn.child != null) {
                 a = evaluate(fn.child);
-                return applyFunction(fn.token.value(), a);
+                return applyFunction(fn.functionName, a);
             }
             else throw new RuntimeException("Not valid function use!");
         }
-        return 0;
+        throw new RuntimeException("could not evaluate");
     }
 
     private double getVariableValue(String name) {
@@ -67,10 +69,15 @@ public class Evaluator {
             case ADD -> a + b;
             case SUB -> a - b;
             case MUL -> a * b;
-            case DIV -> a / b;
-            case POW -> Math.pow(a, b);
+            case DIV -> divide(a, b);
+            case POW -> pow(a, b);
             default -> throw new RuntimeException("Invalid operator");
         };
+    }
+
+    private double divide(double a, double b) {
+        if (b != 0) return a / b;
+        throw new RuntimeException("Cant divide by zero.");
     }
 
     private double applyFunction(String value, double x) {
