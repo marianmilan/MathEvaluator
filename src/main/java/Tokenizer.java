@@ -25,18 +25,17 @@ public class Tokenizer {
         while(position < len) {
             char c = expression.charAt(position);
             if (Character.isWhitespace(c)) {position++; continue;}
-
-            if (Character.isDigit(c) || c == '.') { tokens.add(createNumToken()); position--; }
-            if (Character.isAlphabetic(c)) { tokens.add(createAlphaToken()); position--; }
-            if (c == '-') tokens.add(createMinusToken());
-            if (c == '(') tokens.add(createBracketToken());
-            if (c == ')') tokens.add(createBracketToken());
-            if (c == '+') tokens.add(new Token(TokenType.ADD, "+"));
-            if (c == '*') tokens.add(new Token(TokenType.MUL, "*"));
-            if (c == '/') tokens.add(new Token(TokenType.DIV, "/"));
-            if (c == '^') tokens.add(new Token(TokenType.POW, "^"));
-            if (c == '!') tokens.add(new Token(TokenType.FACT, "!"));
-            if (c == '=') {
+            else if (Character.isDigit(c) || c == '.') { tokens.add(createNumToken()); position--; }
+            else if (Character.isAlphabetic(c)) { tokens.add(createAlphaToken()); position--; }
+            else if (c == '-') tokens.add(createMinusToken());
+            else if (c == '(') tokens.add(createBracketToken());
+            else if (c == ')') tokens.add(createBracketToken());
+            else if (c == '+') tokens.add(new Token(TokenType.ADD, "+"));
+            else if (c == '*') tokens.add(new Token(TokenType.MUL, "*"));
+            else if (c == '/') tokens.add(new Token(TokenType.DIV, "/"));
+            else if (c == '^') tokens.add(new Token(TokenType.POW, "^"));
+            else if (c == '!') tokens.add(new Token(TokenType.FACT, "!"));
+            else if (c == '=') {
                 equalSign++;
                 tokens.add(new Token(TokenType.EQUALS, "="));
             }
