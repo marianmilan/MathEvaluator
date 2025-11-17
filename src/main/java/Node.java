@@ -1,7 +1,3 @@
-import javax.lang.model.util.Elements;
-
-import static java.lang.Math.pow;
-
 public abstract class Node {
     public abstract Node simplify();
 
@@ -21,23 +17,11 @@ public abstract class Node {
             Node leftNode = left.simplify();
             Node rightNode = right.simplify();
 
-            if (leftNode instanceof NumberNode ln && rightNode instanceof NumberNode rn) {
-                return switch(token.type()) {
-                    case ADD -> new NumberNode(ln.value + rn.value);
-                    case SUB -> new NumberNode(ln.value - rn.value);
-                    case MUL -> new NumberNode(ln.value * rn.value);
-                    case DIV -> new NumberNode(ln.value / rn.value);
-                    case POW -> new NumberNode(pow(ln.value, rn.value));
-                    default -> new BinaryNode(leftNode, token, rightNode);
-                };
-            }
-
             if (token.type() == TokenType.POW && leftNode instanceof VariableNode vn) {
                 if (rightNode instanceof NumberNode nn) {
                    return new VariableNode(vn.coefficient, vn.name, nn.value);
                 }
             }
-
             if (leftNode instanceof NumberNode nn && rightNode instanceof VariableNode vn) {
                 return new VariableNode(nn.value, vn.name, vn.exponent);
             }
@@ -100,17 +84,17 @@ public abstract class Node {
     }
 
     static class FunctionNode extends Node {
-        Token token;
+        String functionName;
         Node child;
 
-        public FunctionNode(Token token, Node child) {
-            this.token = token;
+        public FunctionNode(String functionName, Node child) {
+            this.functionName = functionName;
             this.child = child;
         }
 
         @Override
         public Node simplify() {
-            return new FunctionNode(token, child.simplify());
+            return new FunctionNode(functionName, child.simplify());
         }
     }
 

@@ -2,7 +2,7 @@ import java.util.*;
 
 public class Parser {
     private final List<Token> tokens;
-    private int current = 0;
+    private int currentTokenIndex = 0;
     private final HashMap<String, Double> constants = new HashMap<>();
     private final List<String> functions = new ArrayList<>();
     private final SortedSet<String> variables = new TreeSet<>();
@@ -23,14 +23,14 @@ public class Parser {
     }
 
     public Node expression() {
-        return equals().simplify();
+        return equals();
     }
 
     private Node equals() {
         Node node = term();
 
         if (match(TokenType.EQUALS)) {
-            Token t = previous();
+            Token t = previousToken();
             Node right = term();
             return new Node.EqualNode(node, t, right);
         }
@@ -42,7 +42,7 @@ public class Parser {
         Node node = factor();
 
        while (match(TokenType.ADD, TokenType.SUB)) {
-            Token operator = previous();
+            Token operator = previousToken();
             Node right = factor();
             node = new Node.BinaryNode(node, operator, right);
         }
@@ -54,7 +54,7 @@ public class Parser {
         Node node = pow();
 
         while (match(TokenType.MUL, TokenType.DIV)) {
-            Token operator = previous();
+            Token operator = previousToken();
             Node right = pow();
             node = new Node.BinaryNode(node, operator, right);
         }
@@ -65,7 +65,7 @@ public class Parser {
         Node node = func();
 
         while (match(TokenType.POW)) {
-            Token operator = previous();
+            Token operator = previousToken();
             Node right = func();
             node = new Node.BinaryNode(node, operator, right);
         }
@@ -74,11 +74,11 @@ public class Parser {
 
     private Node func() {
         Node node = unary();
-        if(check(TokenType.VAR) && isFunc(peek().value())) {
+        if(check(TokenType.VAR) && isFunc(currentToken().value())) {
             advance();
-            Token token = previous();
+            String functionName = previousToken().value();
             Node child = unary();
-            return new Node.FunctionNode(token, child);
+            return new Node.FunctionNode(functionName, child);
         }
         return node;
     }
@@ -87,7 +87,7 @@ public class Parser {
         Node node = primary();
 
         if(match(TokenType.MINUS, TokenType.FACT)) {
-            Token t = previous();
+            Token t = previousToken();
             Node child = primary();
             return new Node.UnaryNode(child, t);
         }
@@ -95,43 +95,43 @@ public class Parser {
     }
 
     private Node primary() {
-        if (match(TokenType.NUM)) return new Node.NumberNode(previous().value());
+        if (match(TokenType.NUM)) return new Node.NumberNode(previousToken().value());
         else if (match(TokenType.PAR_L)) {
             Node node = expression();
             consume(TokenType.PAR_R);
             return new Node.GroupingNode(node);
         }
-        else if(check(TokenType.VAR) && constants.containsKey(peek().value())) {
+        else if(check(TokenType.VAR) && constants.containsKey(currentToken().value())) {
             advance();
-            return new Node.NumberNode(constants.get(previous().value()));
+            return new Node.NumberNode(constants.get(previousToken().value()));
         }
-        else if (check(TokenType.VAR) && !isFunc(peek().value())) {
+        else if (check(TokenType.VAR) && !isFunc(currentToken().value())) {
             advance();
-            variables.add(previous().value());
-            return new Node.VariableNode(1, previous().value(), 1);
+            variables.add(previousToken().value());
+            return new Node.VariableNode(1, previousToken().value(), 1);
         } else return null;
     }
 
     private boolean end() {
-        return peek().type() == TokenType.EOF;
+        return currentToken().type() == TokenType.EOF;
     }
 
-    private Token peek() {
-        return tokens.get(current);
+    private Token currentToken() {
+        return tokens.get(currentTokenIndex);
     }
 
-    private Token previous() {
-        return tokens.get(current - 1);
+    private Token previousToken() {
+        return tokens.get(currentTokenIndex - 1);
     }
 
     private boolean check(TokenType t) {
         if(end()) return false;
-        return t == peek().type();
+        return t == currentToken().type();
     }
 
     private Token advance() {
-        if(!end()) current++;
-        return previous();
+        if(!end()) currentTokenIndex++;
+        return previousToken();
     }
 
     private Token consume(TokenType type) {
