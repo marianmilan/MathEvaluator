@@ -2,25 +2,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tokenizer {
-    private final List<Token> tokens;
-    private final String expression;
-    private final int length;
+    private List<Token> tokens;
+    private String expression;
+    private int length;
     private byte position;
     private byte parentheses;
     private byte equalSign;
 
-    public Tokenizer(String expression) {
+    public void setExpression(String expression) {
         this.expression = convertExpression(expression);
-        this.tokens = new ArrayList<>();
         this.length = expression.length();
-        this.position = 0;
-        this.parentheses = 0;
-        this.equalSign = 0;
     }
 
     public List<Token> tokenize() {
+        this.position = 0;
+        this.parentheses = 0;
+        this.equalSign = 0;
+        tokens = new ArrayList<>();
         int len = expression.length();
-        TokenType prev = null;
 
         while(position < len) {
             char c = expression.charAt(position);

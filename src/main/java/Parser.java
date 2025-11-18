@@ -1,14 +1,13 @@
 import java.util.*;
 
 public class Parser {
-    private final List<Token> tokens;
-    private int currentTokenIndex = 0;
+    private List<Token> tokens;
+    private int currentTokenIndex;
     private final HashMap<String, Double> constants = new HashMap<>();
     private final List<String> functions = new ArrayList<>();
     private final SortedSet<String> variables = new TreeSet<>();
 
-    public Parser(String expression) {
-        this.tokens = new Tokenizer(expression).tokenize();
+    public Parser() {
         constants.put("m_pi", Math.PI);
         constants.put("m_e", Math.E);
         functions.add("acos");
@@ -22,8 +21,14 @@ public class Parser {
         functions.add("tan");
     }
 
+    public void setTokens(List<Token> tokens) {
+        this.currentTokenIndex = 0;
+        this.tokens = tokens;
+    }
+
     public Node expression() {
-        return equals();
+
+        return equals().simplify();
     }
 
     private Node equals() {

@@ -2,14 +2,9 @@ import java.util.List;
 import static java.lang.Math.pow;
 
 public class Evaluator {
-    private final Node head;
-    private final List<String> variables;
+    private Node head;
+    private List<String> variables;
     private List<Double> values;
-
-    public Evaluator(Node head, List<String> variables) {
-        this.head = head;
-        this.variables = variables;
-    }
 
     public double evaluateExpression(List<Double> values) {
         this.values = values;
@@ -93,5 +88,13 @@ public class Evaluator {
             case "tan" -> Math.tan(x);
             default -> throw new RuntimeException("Not a valid function");
         };
+    }
+
+    public void setHead(Node head) {
+        this.head = head;
+    }
+
+    public void setVariables(List<String> variables) {
+        this.variables = variables;
     }
 }
