@@ -5,7 +5,7 @@ public class Parser {
     private int currentTokenIndex;
     private final HashMap<String, Double> constants = new HashMap<>();
     private final List<String> functions = new ArrayList<>();
-    private final SortedSet<String> variables = new TreeSet<>();
+    private SortedSet<String> variables;
 
     public Parser() {
         constants.put("m_pi", Math.PI);
@@ -22,12 +22,12 @@ public class Parser {
     }
 
     public void setTokens(List<Token> tokens) {
+        variables = new TreeSet<>();
         this.currentTokenIndex = 0;
         this.tokens = tokens;
     }
 
     public Node expression() {
-
         return equals().simplify();
     }
 

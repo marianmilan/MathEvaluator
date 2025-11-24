@@ -1,18 +1,20 @@
+import com.sun.source.tree.LiteralTree;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-public class JacobiMethod {
+public class GaussSeidelMethod {
     private List<String> expressions= List.of(
             "7a+b+2c+3d=18",
             "-2a+10b-3c+4d=23",
             "3a+4b-12c+d=15",
-                    "3c-8d=25");
+            "3c-8d=25");
     private double presnost = 1e-6;
     private double[][] matrix;
     private double[] vector = new double[expressions.size()];
-    private double iterations;
+    private int iterations;
 
     Scanner scanner;
     Tokenizer tokenizer;
@@ -20,14 +22,14 @@ public class JacobiMethod {
     MatrixCreator matrixCreator;
     MatrixNorm norm;
 
-    public JacobiMethod(double[][] matrix, double presnost) {
+    public GaussSeidelMethod(double[][] matrix, double presnost) {
         this.matrix = matrix;
         this.vector = new double[matrix.length];
         this.presnost = presnost;
         this.norm = new MatrixNorm();
     }
 
-    public JacobiMethod(Scanner scanner, Tokenizer tokenizer, Parser parser, MatrixCreator creator, MatrixNorm norm) {
+    public GaussSeidelMethod(Scanner scanner, Tokenizer tokenizer, Parser parser, MatrixCreator creator, MatrixNorm norm) {
         this.scanner = scanner;
         this.tokenizer = tokenizer;
         this.parser = parser;
@@ -76,7 +78,6 @@ public class JacobiMethod {
             tokenizer.setExpression(s);
             parser.setTokens(tokenizer.tokenize());
             trees.add(parser.expression());
-            System.out.println(parser.getVariables());
             List<String> currentVariables = parser.getVariables();
             if (variables.size() < currentVariables.size()) variables = currentVariables;
         }
@@ -108,13 +109,13 @@ public class JacobiMethod {
         int length = matrix.length;
         int colIndex;
         double value;
-        double[] newVector = new double[vector.length];
+        double[] newVector = vector.clone();
         for (int i = 0; i < length; i++) {
             colIndex = 0;
             value = 0;
             for (int j = 0; j < vector.length; j++) {
                 if (i == j) continue;
-                value += matrix[i][colIndex] * vector[j];
+                value += matrix[i][colIndex] * newVector[j];
                 colIndex++;
             }
             newVector[i] = value + matrix[i][colIndex];

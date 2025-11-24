@@ -10,6 +10,8 @@ public class MathEvaluator {
         Tokenizer tokenizer = new Tokenizer();
         Parser parser = new Parser();
         Evaluator evaluator = new Evaluator();
+        MatrixCreator creator = new MatrixCreator();
+        MatrixNorm norm = new MatrixNorm();
 
         loop:
         while(true) {
@@ -19,10 +21,10 @@ public class MathEvaluator {
                 case "1" -> new Bisekcia(scanner, tokenizer, parser, evaluator);
                 case "2" -> new RegulaFalsi(scanner, tokenizer, parser, evaluator);
                 case "3" -> new NewtonMethod(scanner, tokenizer, parser, evaluator);
-                case "6" -> System.out.println();
-                case "7" -> System.out.println();
-                case "8" -> System.out.println();
-                case "9" -> System.out.println();
+                case "4" -> new JacobiMethod(scanner, tokenizer, parser, creator, norm);
+                case "5" -> new GaussSeidelMethod(scanner, tokenizer, parser, creator, norm);
+                case "6" -> new InterpolatingPolynomial(scanner, creator);
+                case "7" -> new LeastSquaresMethod(scanner, creator);
                 case "10" -> System.out.println();
             }
             System.out.println("\nPre pokracovanie stlacte [y].");
