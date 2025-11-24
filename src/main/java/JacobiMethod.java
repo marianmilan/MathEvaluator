@@ -1,2 +1,2 @@
-public class JacobihoMetoda {
+public class JacobiMethod {
 }
